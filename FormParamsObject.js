@@ -24,7 +24,6 @@ function FormParamsObject(objectParams) {
     this.setObjectProperty = function(propPath, value){
         this.__checkIsString(propPath);
         var path = propPath.split(this.__paramsSeparator);
-
         var i = -1;
         var setVal = function(obj, val){
             i++;
@@ -42,18 +41,24 @@ function FormParamsObject(objectParams) {
             }
             return obj;
         };
-
         setVal(this.objectParams, value);
-
         return value;
     };
 
 
     this.convertObjectToArray = function(propPath){
         this.__checkIsString(propPath);
-        var property = this.getObjectProperty(propPath);
+        var property = this.getObjectProperty(propPath),
+            keys = Object.keys(property),
+            result = [];
 
-
+        keys.reduce(function(obj,key) {
+            for (var i =0; i < property[key].length; i++) {
+                if (result[i] === undefined) result[i] = {};
+                result[i][key] = property[key][i];
+            }
+        }, []);
+        return result;
     };
 
 
