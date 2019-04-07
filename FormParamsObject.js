@@ -1,11 +1,13 @@
 function FormParamsObject(objectParams) {
-    this.objectParams = objectParams;
 
+    this.objectParams = objectParams;
     this.__paramsSeparator = '.';
+
 
     this.getFullObject = function(){
         return this.objectParams;
     };
+
 
     this.getObjectProperty = function(propPath){
         this.__checkIsString(propPath);
@@ -21,19 +23,18 @@ function FormParamsObject(objectParams) {
         return result;
     };
 
+
     this.setObjectProperty = function(propPath, value){
         this.__checkIsString(propPath);
-        var path = propPath.split(this.__paramsSeparator);
-        var i = -1;
+        var path = propPath.split(this.__paramsSeparator),
+            i = -1;
         var setVal = function(obj, val){
             i++;
             var key = path[i],
                 isLast = i === path.length - 1;
-
             if (!obj.hasOwnProperty(key) || ( typeof obj[key] !== 'object' || Array.isArray(obj[key]) )) {
                 obj[key] = {};
             }
-
             if (isLast) {
                 obj[key] = val;
             } else {
@@ -41,6 +42,7 @@ function FormParamsObject(objectParams) {
             }
             return obj;
         };
+
         setVal(this.objectParams, value);
         return value;
     };
@@ -48,11 +50,17 @@ function FormParamsObject(objectParams) {
 
     this.convertObjectToArray = function(propPath){
         this.__checkIsString(propPath);
-        var property = this.getObjectProperty(propPath),
-            keys = Object.keys(property),
+        var property = this.getObjectProperty(propPath);
+
+        if (property === null) throw new Error('Params ' + propPath + ' not found.');
+
+        var keys = Object.keys(property),
             result = [];
 
         keys.reduce(function(obj,key) {
+            if (!Array.isArray(property[key])) {
+                throw new SyntaxError('Invalid data type: (' + typeof property[key] + '). Array expected.');
+            }
             for (var i =0; i < property[key].length; i++) {
                 if (result[i] === undefined) result[i] = {};
                 result[i][key] = property[key][i];
@@ -67,21 +75,4 @@ function FormParamsObject(objectParams) {
             throw new SyntaxError('Invalid data type: (' + typeof o + '). String expected.');
         }
     };
-
-    this.__isObject = function(o){
-        return typeof o === 'object' && !Array.isArray(o)
-    };
 }
-
-var params = new FormParamsObject(
-    {
-        param1: 'test1',
-        param2: {
-            param21: 'test2',
-            param22: {
-                number: ["123", "456"],
-                text: ["text1", "text2"],
-            }
-        }
-    }
-);
